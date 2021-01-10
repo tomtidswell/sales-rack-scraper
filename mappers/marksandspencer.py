@@ -1,51 +1,9 @@
 import requests
 from bs4 import BeautifulSoup
 
-class NothingScraped(Exception):
-    pass
+from .main import Mapper
 
-
-class NothingParsed(Exception):
-    pass
-
-
-class NothingMapped(Exception):
-    pass
-
-
-class MarksAndSpencerMapper:
-    def __init__(self, scraped_data=[], site=""):
-        # dbclient = MongoClient('mongodb://localhost/')
-        # sales_data = dbclient["sales"]
-        # self.collection = sales_data["products"]
-        self.feedname = "marksandspencer-home"
-        self.category = "homeware"
-        self.retailer = "marksandspencer"
-        self.scraped_data = scraped_data
-        self.parsed_products = []
-        self.mapped_products = []
-        self.site = site
-
-    def begin_parse(self):
-        # check we have scraped data
-        if not self.scraped_data:
-            raise NothingScraped("No scraped data was found by the mapper")
-        # parse each scraped record
-        for product in self.scraped_data:
-            self.parse_product_data(product)
-        # check we parsed some data
-        if not self.parsed_products:
-            raise NothingParsed("No data was parsed from the scrape")
-        # map each parsed item
-        for product in self.parsed_products:
-            self.map_product_data(product)
-        # check we mapped something
-        if not self.mapped_products:
-            raise NothingMapped(
-                "No mapped data was identified before saving to database")
-        # save into the database
-        for product in self.mapped_products:
-            self.save_product_data(product)
+class MarksAndSpencerMapper(Mapper):
 
     def parse_product_data(self, product_element):
         """Extracts product data from HTML element."""
@@ -95,13 +53,3 @@ class MarksAndSpencerMapper:
         print('Mapped data', p_data)
         print("------")
         self.mapped_products.append(p_data)
-
-    def save_product_data(self, product_data):
-        try:
-            res = requests.put('http://localhost:4000/api/products', json=product_data)
-            if res.status_code != 202:
-                print("Failure saving", res, res.status_code, res.json(), dir(x))
-            else:
-                print("Success saving", product_data['name'])
-        except Exception as e:
-            print("Failure saving", product_data['name'], e)
