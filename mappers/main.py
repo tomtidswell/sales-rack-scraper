@@ -81,6 +81,20 @@ class Mapper:
         return success
 
     def save_stats(self):
-        print('Successes:', self.success_count)
-        print('Failures:', self.failure_count)
-        print('Total products scraped:', len(self.mapped_products))
+        data = {
+            "retailer": self.retailer,
+            "category": self.category,
+            "totalProducts": len(self.mapped_products),
+            "success": self.success_count,
+            "failure": self.failure_count,
+        }
+        try:
+            res = requests.post(
+                'http://localhost:4000/api/scrapes', json=data)
+            if res.status_code != 201:
+                raise SaveError(res)
+            else:
+                print("Success saving scrape", data)
+
+        except Exception as e:
+            print("Failure saving scrape", e)
