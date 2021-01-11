@@ -3,7 +3,7 @@
 # from selenium.webdriver.common.by import By
 # from selenium import webdriver
 
-from .main import Scraper
+from .main_scraper import Scraper
 
 
 class JohnLewisScraper(Scraper):

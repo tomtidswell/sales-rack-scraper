@@ -1,7 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 
-from .main import Mapper
+from .main_mapper import Mapper
 
 class MarksAndSpencerMapper(Mapper):
 

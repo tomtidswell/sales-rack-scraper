@@ -2,7 +2,7 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
-from .main import Mapper
+from .main_mapper import Mapper
 
 class JohnLewisMapper(Mapper):
 

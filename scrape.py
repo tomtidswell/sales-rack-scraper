@@ -12,7 +12,7 @@ from mappers.johnlewis import JohnLewisMapper
 def scrapeMarksAndSpencer():
     site = "https://www.marksandspencer.com"
     page = "/l/offers/sale/home-sale"
-    scraper = MarksAndSpencerScraper(site, page)
+    scraper = MarksAndSpencerScraper(site=site, page=page, retailer="marksandspencer")
     print('Starting scrape')
     scraper.handle_privacy(banner_selector=".privacy_prompt_footer")
     scraper.handle_pagination()
@@ -38,9 +38,9 @@ def scrapeMarksAndSpencer():
 def scrapeJohnLewis():
     site = "https://www.johnlewis.com"
     page = "/browse/clearance/home-garden-offers/tableware-offers/_/N-5nhq"
-    scraper = JohnLewisScraper(site, page)
+    scraper = JohnLewisScraper(site=site, page=page, retailer="johnlewis")
     print('Starting scrape')
-    scraper.handle_privacy(banner_selector="button[data-test='allow-all']")
+    scraper.handle_privacy()
     scraper.scroll_to_bottom()
     # scraper.handle_pagination()
     products = scraper.get_grid() or []
@@ -66,7 +66,7 @@ def scrapeJohnLewis():
 
 
 if __name__ == '__main__':
-    scrapeMarksAndSpencer()
-    # scrapeJohnLewis()
+    # scrapeMarksAndSpencer()
+    scrapeJohnLewis()
 
 
