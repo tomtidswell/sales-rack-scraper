@@ -21,12 +21,9 @@ class SaveError(Exception):
 
 
 class Mapper:
-    def __init__(self, scraped_data=[], site="", feedname="", retailer="", category=""):
-        # dbclient = MongoClient('mongodb://localhost/')
-        # sales_data = dbclient["sales"]
-        # self.collection = sales_data["products"]
+    def __init__(self, scraped_data=[], site="", retailer="", category="", page=""):
         self.site = site
-        self.feedname = feedname
+        self.page = page
         self.retailer = retailer
         self.category = category
         self.scraped_data = scraped_data

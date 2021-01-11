@@ -14,53 +14,91 @@ class APIError(Exception):
         print(message, self.response, self.status_code, self.response.json())
 
 
+class APIConnectionError(Exception):
+    def __init__(self, message="Could not access API"):
+        print(message)
 
 
 
 class Scraper:
     def __init__(self, site, page, retailer=""):
+        self.site = site
         self.driver = webdriver.Chrome()
         self.retailer = retailer
         self.settings = {}
+        self.products = []
         self.fetch_settings()
-        self.wait = WebDriverWait(self.driver, 15)
-        self.driver.get(f"{site}{page}")
+        self.begin()
+
+    def begin(self):
+        for page in self.settings:
+            self.scrape_page(page)
+        self.close_browser()
+        print('Finished scrape. Closing browser')
+    
+    def scrape_page(self, config):
+        page = config.get('page')
+        category = config.get('category')
+        privacySelector = config.get('privacySelector')
+        gridItemSelector = config.get('gridItemSelector')
+        paginationSelector = config.get('paginationSelector')
+        print('Starting scrape')
+        # self.wait = WebDriverWait(self.driver, 15)
+        self.driver.get(f"{self.site}{page}")
+        self.handle_privacy(privacySelector)
+        self.scroll_to_bottom()
+        self.handle_pagination(paginationSelector)
+        products = self.get_grid(gridItemSelector) or []
+        self.products.append({
+            "products": products,
+            "page": page,
+            "category": category
+        })
+        print('Identified', len(products), 'products')
 
     def fetch_settings(self):
+        res = None
         try:
             res = requests.get(
                 f"http://localhost:4000/api/scrapesettings?retailer={self.retailer}"
             )
-            if res.status_code != 200:
-                raise APIError(res)
-            else:
-                self.settings = res.json()[0]
-                print("Success fetching scrape settings", res, self.settings)
-
         except Exception as e:
             print("Failure fetching scrape settings", e)
+        
+        if not res:
+            raise APIConnectionError()
+        elif res.status_code != 200:
+            raise APIError(res)
+        else:
+            self.settings = res.json()
+            print("Success fetching scrape settings", res, self.settings)
 
     def close_browser(self):
         self.driver.close()
         self.driver.quit()
     
-    def handle_privacy(self):
-        privacy_selector = self.settings.get('privacySelector')
+    def handle_privacy(self, selector):
+        if not selector:
+            return
         banner = None
         try:
-            banner = self.driver.find_element_by_css_selector(privacy_selector)
-            print('Text:', banner)
-            banner.click()
+            banner = self.driver.find_element_by_css_selector(selector)
         except Exception as e:
-            # try it again
-            print('Caught exception:', e)
-            banner = self.driver.find_element_by_css_selector(privacy_selector)
-            print('Text:', banner)
-            banner.click()
-        finally:
-            print('Found privacy', banner)
+            print("Didn't find banner on first attempt", e)
+        try:
+            if not banner:
+                banner = self.driver.find_element_by_css_selector(selector)
+        except Exception as e:
+            print("Didn't find banner on second attempt", e)
 
-    def handle_pagination(self):
+        if banner:
+            print('Text:', banner.text)
+            print('Found privacy', banner)
+            banner.click()
+
+    def handle_pagination(self, selector):
+        if not selector:
+            return
         pagination_available = True
         pagination = None
         while pagination_available:
@@ -89,3 +127,8 @@ class Scraper:
             # reset the body height just in case there is infinite scroll
             body_height = self.driver.find_element(
                 By.TAG_NAME, "body").get_attribute('offsetHeight')
+
+    def get_grid(self, selector):
+        if not selector:
+            return
+        return [el.get_attribute('innerHTML') for el in self.driver.find_elements_by_css_selector(selector)]

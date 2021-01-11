@@ -47,7 +47,7 @@ class MarksAndSpencerMapper(Mapper):
                 p_data['main_image'] = img['source']
             elif 'product__image--hover' in img['class']:
                 p_data['hover_image'] = img['source']
-        p_data['source'] = self.feedname
+        p_data['source'] = self.page
         p_data['category'] = self.category
         p_data['retailer'] = self.retailer
         print('Mapped data', p_data)
