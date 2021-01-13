@@ -21,7 +21,7 @@ class APIConnectionError(Exception):
 
 
 class Scraper:
-    def __init__(self, site, page, retailer=""):
+    def __init__(self, site, retailer=""):
         self.site = site
         self.driver = webdriver.Chrome()
         self.retailer = retailer
