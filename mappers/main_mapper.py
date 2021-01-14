@@ -2,6 +2,8 @@ import requests
 import re
 from bs4 import BeautifulSoup
 
+from identify_category import identify_category
+
 class NothingScraped(Exception):
     pass
 
@@ -31,6 +33,7 @@ class Mapper:
         self.mapped_products = []
         self.success_count = 0
         self.failure_count = 0
+        self.mappable_categories = ['homeware']
         self.begin()
 
     def begin(self):
@@ -50,7 +53,11 @@ class Mapper:
         if not self.mapped_products:
             raise NothingMapped(
                 "No mapped data was identified before saving to database")
-        
+        # run category conversion
+        for product in self.mapped_products:
+            self.map_category(product)
+            print(product)
+
         self.success_count = 0
         self.failure_count = 0
         # save into the database
@@ -62,6 +69,13 @@ class Mapper:
                 self.failure_count+=1
 
         self.save_stats()
+
+    def map_category(self, product_data):
+        if product_data['category'] in self.mappable_categories:
+            new_category = identify_category(product_data['name'])
+            if new_category:
+                product_data['category'] = new_category
+        return product_data
 
     def save_product_data(self, product_data):
         success = False
