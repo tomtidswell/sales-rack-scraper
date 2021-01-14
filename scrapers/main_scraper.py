@@ -3,6 +3,7 @@ import requests
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium import webdriver
 
 
@@ -105,8 +106,12 @@ class Scraper:
             try:
                 pagination = self.driver.find_element_by_css_selector(
                     ".grid__load-more > .pagination")
+                # create action chain object
+                action = ActionChains(self.driver)
+                # perform the operation
+                action.move_to_element(pagination).click().perform()
                 # click it!
-                pagination.click()
+                # pagination.click()
                 print('Found load more', pagination_available, pagination)
             except Exception as e:
                 pagination_available = False
