@@ -28,6 +28,7 @@ class Scraper:
         self.retailer = retailer
         self.settings = {}
         self.products = []
+        self.pagination_counter = 1
         self.fetch_settings()
         self.begin()
 
@@ -43,19 +44,33 @@ class Scraper:
         privacySelector = config.get('privacySelector')
         gridItemSelector = config.get('gridItemSelector')
         paginationSelector = config.get('paginationSelector')
+        urlPagination = config.get('urlPaginationPattern')
+        self.pagination_counter = 1
+        products = []
         print('Starting scrape')
         # self.wait = WebDriverWait(self.driver, 15)
         self.driver.get(f"{self.site}{page}")
         self.handle_privacy(privacySelector)
-        self.scroll_to_bottom()
-        self.handle_pagination(paginationSelector)
-        products = self.get_grid(gridItemSelector) or []
+        keep_scraping = True
+        while keep_scraping:
+            self.scroll_to_bottom()
+            self.handle_in_page_pagination(paginationSelector)
+            newProducts = self.get_grid(gridItemSelector) or []
+            if len(newProducts) == 0:
+                break
+            for product in newProducts:
+                products.append(product)
+            print('Identified', len(newProducts), 'additional products')
+            keep_scraping = self.handle_url_pagination(
+                urlPagination, page
+            )
+
+        print('Identified', len(products), 'products in total')
         self.products.append({
             "products": products,
             "page": page,
             "category": category
         })
-        print('Identified', len(products), 'products')
 
     def fetch_settings(self):
         res = None
@@ -97,15 +112,14 @@ class Scraper:
             print('Found privacy', banner)
             banner.click()
 
-    def handle_pagination(self, selector):
+    def handle_in_page_pagination(self, selector):
         if not selector:
             return
         pagination_available = True
         pagination = None
         while pagination_available:
             try:
-                pagination = self.driver.find_element_by_css_selector(
-                    ".grid__load-more > .pagination")
+                pagination = self.driver.find_element_by_css_selector(selector)
                 # create action chain object
                 action = ActionChains(self.driver)
                 # perform the operation
@@ -116,6 +130,21 @@ class Scraper:
             except Exception as e:
                 pagination_available = False
                 print('No load more found', e)
+
+    def handle_url_pagination(self, pattern, page):
+        if not pattern:
+            return False
+        self.pagination_counter += 1
+        query = pattern.replace("%page%", str(self.pagination_counter))
+        url = ""
+        if "?" in page:
+            url = f"{self.site}{page}&{query}"
+        else:
+            url = f"{self.site}{page}?{query}"
+        
+        print('Stepping through pagination:', url)
+        self.driver.get(url)
+        return True
 
     def scroll_to_bottom(self):
         """Scrolls to the bottom of the page."""

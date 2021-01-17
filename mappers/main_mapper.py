@@ -39,18 +39,21 @@ class Mapper:
     def begin(self):
         # check we have scraped data
         if not self.scraped_data:
+            self.save_stats()
             raise NothingScraped("No scraped data was found by the mapper")
         # parse each scraped record
         for product in self.scraped_data:
             self.parse_product_data(product)
         # check we parsed some data
         if not self.parsed_products:
+            self.save_stats()
             raise NothingParsed("No data was parsed from the scrape")
         # map each parsed item
         for product in self.parsed_products:
             self.map_product_data(product)
         # check we mapped something
         if not self.mapped_products:
+            self.save_stats()
             raise NothingMapped(
                 "No mapped data was identified before saving to database")
         # run category conversion
