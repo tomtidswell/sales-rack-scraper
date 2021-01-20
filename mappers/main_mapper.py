@@ -83,7 +83,8 @@ class Mapper:
     def save_product_data(self, product_data):
         success = False
         try:
-            res = requests.put('http://localhost:4000/api/products', json=product_data)
+            res = requests.put(
+                'https://sharp-turing-d1c0f9.netlify.app/api/products', json=product_data)
             if res.status_code != 202:
                 raise SaveError(res)
             else:
@@ -104,7 +105,7 @@ class Mapper:
         }
         try:
             res = requests.post(
-                'http://localhost:4000/api/scrapes', json=data)
+                'https://sharp-turing-d1c0f9.netlify.app/api/scrapes', json=data)
             if res.status_code != 201:
                 raise SaveError(res)
             else:

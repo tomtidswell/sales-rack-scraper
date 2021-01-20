@@ -53,8 +53,8 @@ class Scraper:
         self.handle_privacy(privacySelector)
         keep_scraping = True
         while keep_scraping:
-            self.scroll_to_bottom()
             self.handle_in_page_pagination(paginationSelector)
+            self.scroll_to_bottom()
             newProducts = self.get_grid(gridItemSelector) or []
             if len(newProducts) == 0:
                 break
@@ -76,7 +76,7 @@ class Scraper:
         res = None
         try:
             res = requests.get(
-                f"http://localhost:4000/api/scrapesettings?retailer={self.retailer}"
+                f"https://sharp-turing-d1c0f9.netlify.app/api/scrapesettings?retailer={self.retailer}"
             )
         except Exception as e:
             print("Failure fetching scrape settings", e)
